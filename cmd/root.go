@@ -47,13 +47,6 @@ func init() {
 
 }
 
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
 func lookupTerm(term string) error {
 	url := fmt.Sprintf("%s/%s", baseAPI, term)
 
