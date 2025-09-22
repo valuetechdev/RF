@@ -16,6 +16,7 @@ import (
 var (
 	baseAPI string = "https://fiken.no/forklarer/api/forklarer"
 	timeout time.Duration
+	verbose bool
 )
 
 var rootCmd = &cobra.Command{
@@ -44,7 +45,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "HTTP request timeout")
-
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
 }
 
 func lookupTerm(term string) error {
@@ -73,6 +74,10 @@ func lookupTerm(term string) error {
 	var doc internal.Document
 	if err := json.Unmarshal(body, &doc); err != nil {
 		return fmt.Errorf("failed to parse JSON response: %w", err)
+	}
+	if !verbose {
+		fmt.Println(doc.Sammendrag[0].Children[0].Text)
+		return nil
 	}
 
 	transformer := internal.NewMarkdownTransformer()
