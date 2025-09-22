@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/valuetechtev/rf/internal"
@@ -76,7 +77,16 @@ func lookupTerm(term string) error {
 		return fmt.Errorf("failed to parse JSON response: %w", err)
 	}
 	if !verbose {
-		fmt.Println(doc.Sammendrag[0].Children[0].Text)
+		var result strings.Builder
+		fmt.Fprintln(&result, doc.Sammendrag[0].Children[0].Text)
+		if len(doc.Relaterte) > 0 {
+			result.WriteString("\n## Related\n\n")
+			for _, rel := range doc.Relaterte {
+				result.WriteString(fmt.Sprintf("- %s\n", rel.Tittel))
+			}
+			result.WriteString("\n")
+		}
+		fmt.Print(result.String())
 		return nil
 	}
 
