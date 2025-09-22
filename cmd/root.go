@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/valuetechtev/rf/internal"
@@ -16,6 +17,7 @@ import (
 var (
 	baseAPI string = "https://fiken.no/forklarer/api/forklarer"
 	timeout time.Duration
+	verbose bool
 )
 
 var rootCmd = &cobra.Command{
@@ -44,14 +46,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "HTTP request timeout")
-
-}
-
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
 }
 
 func lookupTerm(term string) error {
@@ -80,6 +75,19 @@ func lookupTerm(term string) error {
 	var doc internal.Document
 	if err := json.Unmarshal(body, &doc); err != nil {
 		return fmt.Errorf("failed to parse JSON response: %w", err)
+	}
+	if !verbose {
+		var result strings.Builder
+		fmt.Fprintln(&result, doc.Sammendrag[0].Children[0].Text)
+		if len(doc.Relaterte) > 0 {
+			result.WriteString("\n## Related\n\n")
+			for _, rel := range doc.Relaterte {
+				result.WriteString(fmt.Sprintf("- %s\n", rel.Tittel))
+			}
+			result.WriteString("\n")
+		}
+		fmt.Print(result.String())
+		return nil
 	}
 
 	transformer := internal.NewMarkdownTransformer()
