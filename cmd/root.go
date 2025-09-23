@@ -30,6 +30,7 @@ It fetches data from an API endpoint and displays the result as formatted Markdo
 	Example: `  rf bokforing    # Look up "bokføring" 
   rf regnskap     # Look up "regnskap"
   rf balanse      # Look up "balanse"`, //nolint:misspell
+	ValidArgsFunction: completeList,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		term := args[0]
 		return lookupTerm(term)

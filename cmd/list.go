@@ -9,10 +9,8 @@ import (
 
 func listCmd() *cobra.Command {
 	run := func(cmd *cobra.Command, args []string) {
-		entries, err := terms.ReadDir(termsPath)
-		cobra.CheckErr(err)
-		for _, entry := range entries {
-			fmt.Println(strings.ReplaceAll(entry.Name(), ".json", ""))
+		for _, term := range allTerms() {
+			fmt.Println(term)
 		}
 	}
 
@@ -24,4 +22,18 @@ func listCmd() *cobra.Command {
 		Run:     run,
 	}
 	return cmd
+}
+
+func allTerms() []string {
+	var s []string
+	entries, err := terms.ReadDir(termsPath)
+	cobra.CheckErr(err)
+	for _, entry := range entries {
+		s = append(s, strings.ReplaceAll(entry.Name(), ".json", ""))
+	}
+	return s
+}
+
+func completeList(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return allTerms(), cobra.ShellCompDirectiveNoFileComp
 }
