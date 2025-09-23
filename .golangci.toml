@@ -1,0 +1,9 @@
+#:schema https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+version = "2"
+
+[linters]
+enable = ["bodyclose", "gosec", "nilnil", "sloglint","unused","unconvert","whitespace","misspell"]
+
+[[linters.exclusions.rules]]
+linters = [ "errcheck" ]
+source = "^\\s*defer\\s+"

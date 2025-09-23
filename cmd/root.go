@@ -29,7 +29,7 @@ It fetches data from an API endpoint and displays the result as formatted Markdo
 Examples:
   rf bokforing    # Look up "bokføring" 
   rf regnskap     # Look up "regnskap"
-  rf balanse      # Look up "balanse"`,
+  rf balanse      # Look up "balanse"`, //nolint:misspell
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		term := args[0]
