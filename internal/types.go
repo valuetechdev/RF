@@ -4,13 +4,8 @@ import "time"
 
 type Document struct {
 	CreatedAt  time.Time `json:"_createdAt"`
-	ID         string    `json:"_id"`
-	Rev        string    `json:"_rev"`
-	Type       string    `json:"_type"`
 	UpdatedAt  time.Time `json:"_updatedAt"`
 	Body       []Block   `json:"body"`
-	BrodTekst  []Block   `json:"brodtekst"`
-	Ord        string    `json:"ord"`
 	Relaterte  []Related `json:"relaterte"`
 	Sammendrag []Block   `json:"sammendrag"`
 	Tittel     string    `json:"tittel"`
@@ -19,8 +14,6 @@ type Document struct {
 }
 
 type Block struct {
-	Key      string    `json:"_key"`
-	Type     string    `json:"_type"`
 	Children []Span    `json:"children"`
 	MarkDefs []MarkDef `json:"markDefs"`
 	Style    string    `json:"style"`
@@ -29,32 +22,25 @@ type Block struct {
 }
 
 type Span struct {
-	Key   string   `json:"_key"`
-	Type  string   `json:"_type"`
 	Marks []string `json:"marks"`
 	Text  string   `json:"text"`
 }
 
 type MarkDef struct {
-	Key       string    `json:"_key"`
-	Type      string    `json:"_type"`
-	Reference Reference `json:"reference,omitempty"`
+	Reference Reference `json:"reference,omitzero"`
 	Href      string    `json:"href,omitempty"`
-	Slug      Slug      `json:"slug,omitempty"`
+	Slug      Slug      `json:"slug,omitzero"`
 }
 
 type Reference struct {
-	Ref  string `json:"_ref"`
-	Type string `json:"_type"`
+	Ref string `json:"_ref"`
 }
 
 type Related struct {
-	ID     string `json:"id"`
 	Slug   Slug   `json:"slug"`
 	Tittel string `json:"tittel"`
 }
 
 type Slug struct {
-	Type    string `json:"_type"`
 	Current string `json:"current"`
 }

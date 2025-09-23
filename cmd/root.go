@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,31 +15,30 @@ import (
 )
 
 var (
-	baseAPI string = "https://fiken.no/forklarer/api/forklarer"
-	timeout time.Duration
-	verbose bool
+	timeout   time.Duration
+	verbose   bool
+	terms     embed.FS
+	termsPath = filepath.Clean("terms")
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "rf [term]",
 	Short: "Lookup Norwegian financial terms and display as Markdown",
 	Long: `RF (Regnskapsfaglig) is a CLI tool for looking up Norwegian financial and accounting terms.
-It fetches data from an API endpoint and displays the result as formatted Markdown.
-
-Examples:
-  rf bokforing    # Look up "bokføring" 
+It fetches data from an API endpoint and displays the result as formatted Markdown.`,
+	Args: cobra.ExactArgs(1),
+	Example: `  rf bokforing    # Look up "bokføring" 
   rf regnskap     # Look up "regnskap"
   rf balanse      # Look up "balanse"`, //nolint:misspell
-	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		term := args[0]
 		return lookupTerm(term)
 	},
 }
 
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+func Execute(t embed.FS) {
+	terms = t
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
@@ -47,33 +46,17 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "HTTP request timeout")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
+	rootCmd.AddCommand(listCmd())
 }
 
 func lookupTerm(term string) error {
-	url := fmt.Sprintf("%s/%s", baseAPI, term)
-
-	client := &http.Client{
-		Timeout: timeout,
-	}
-
-	resp, err := client.Get(url)
+	f, err := terms.ReadFile(filepath.Join(termsPath, fmt.Sprintf("%s.json", term)))
 	if err != nil {
-		return fmt.Errorf("failed to fetch data from %s: %w", url, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+		return err
 	}
 
 	var doc internal.Document
-	if err := json.Unmarshal(body, &doc); err != nil {
+	if err := json.Unmarshal(f, &doc); err != nil {
 		return fmt.Errorf("failed to parse JSON response: %w", err)
 	}
 	if !verbose {
@@ -91,10 +74,6 @@ func lookupTerm(term string) error {
 	}
 
 	transformer := internal.NewMarkdownTransformer()
-
-	transformer.SetLinkResolver(func(ref string) string {
-		return fmt.Sprintf("%s/%s", baseAPI, ref)
-	})
 
 	markdown := transformer.Transform(doc)
 	fmt.Print(markdown)
