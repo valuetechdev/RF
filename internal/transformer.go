@@ -18,10 +18,6 @@ func NewMarkdownTransformer() *MarkdownTransformer {
 	}
 }
 
-func (t *MarkdownTransformer) SetLinkResolver(resolver func(string) string) {
-	t.linkResolver = resolver
-}
-
 func (t *MarkdownTransformer) Transform(doc Document) string {
 	var result strings.Builder
 
@@ -92,8 +88,9 @@ func (t *MarkdownTransformer) transformBlock(block Block) string {
 
 func (t *MarkdownTransformer) transformSpans(spans []Span, markDefs []MarkDef) string {
 	markDefMap := make(map[string]MarkDef)
-	for _, md := range markDefs {
-		markDefMap[md.Key] = md
+	for i, md := range markDefs {
+		// Use index as key since we removed the Key field
+		markDefMap[fmt.Sprintf("%d", i)] = md
 	}
 
 	var result strings.Builder
@@ -113,10 +110,12 @@ func (t *MarkdownTransformer) transformSpans(spans []Span, markDefs []MarkDef) s
 			}
 
 			if markDef, exists := markDefMap[mark]; exists {
-				switch markDef.Type {
-				case "link":
+				// Determine type based on content since we removed the Type field
+				if markDef.Href != "" {
+					// This is a regular link
 					text = fmt.Sprintf("[%s](%s)", text, markDef.Href)
-				case "ordLink":
+				} else if markDef.Reference.Ref != "" || markDef.Slug.Current != "" {
+					// This is an ordLink (term reference)
 					if markDef.Slug.Current != "" {
 						text = fmt.Sprintf("[%s](%s)", text, t.linkResolver(markDef.Slug.Current))
 					} else {

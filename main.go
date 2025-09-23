@@ -1,7 +1,14 @@
 package main
 
-import "github.com/valuetechtev/rf/cmd"
+import (
+	"embed"
+
+	"github.com/valuetechtev/rf/cmd"
+)
+
+//go:embed terms
+var terms embed.FS
 
 func main() {
-	cmd.Execute()
+	cmd.Execute(terms)
 }
