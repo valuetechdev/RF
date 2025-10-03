@@ -18,7 +18,7 @@ func NewMarkdownTransformer() *MarkdownTransformer {
 	}
 }
 
-func (t *MarkdownTransformer) Transform(doc Document) string {
+func (t *MarkdownTransformer) Transform(doc *Document) string {
 	var result strings.Builder
 
 	if doc.Tittel != "" {

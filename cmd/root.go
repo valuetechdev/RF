@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/glamour"
@@ -36,7 +35,9 @@ It fetches data from an API endpoint and displays the result as formatted Markdo
 	ValidArgsFunction: completeList,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		term := args[0]
-		return lookupTerm(term)
+		doc, err := lookupTerm(term)
+		cobra.CheckErr(err)
+		return RenderDoc(doc)
 	},
 }
 
@@ -54,30 +55,38 @@ func init() {
 	rootCmd.AddCommand(listCmd())
 }
 
-func lookupTerm(term string) error {
+func lookupTerm(term string) (*internal.Document, error) {
 	f, err := terms.ReadFile(filepath.Join(termsPath, fmt.Sprintf("%s.json", term)))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var doc internal.Document
+
 	if err := json.Unmarshal(f, &doc); err != nil {
-		return fmt.Errorf("failed to parse JSON response: %w", err)
-	}
-	if !verbose {
-		var result strings.Builder
-		fmt.Fprintln(&result, doc.Sammendrag[0].Children[0].Text)
-		if len(doc.Relaterte) > 0 {
-			result.WriteString("\n## Related\n\n")
-			for _, rel := range doc.Relaterte {
-				result.WriteString(fmt.Sprintf("- %s\n", rel.Tittel))
-			}
-			result.WriteString("\n")
-		}
-		fmt.Print(result.String())
-		return nil
+		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
 	}
 
+	if !verbose {
+		// in non-verbose mode, we modify the doc by removing the stuff
+		// we dont want to render
+
+		// remove the body, and keep the summary
+		doc.Body = nil
+
+		// remove synonyms
+		doc.Synonymer = nil
+
+		// remove the slug at the end of the related terms
+		for idx, related := range doc.Relaterte {
+			related.Slug = internal.Slug{}
+			doc.Relaterte[idx] = related
+		}
+	}
+	return &doc, nil
+}
+
+func RenderDoc(doc *internal.Document) error {
 	transformer := internal.NewMarkdownTransformer()
 
 	markdown := transformer.Transform(doc)
@@ -100,6 +109,5 @@ func lookupTerm(term string) error {
 	}
 
 	fmt.Print(markdown)
-
 	return nil
 }
