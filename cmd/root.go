@@ -9,14 +9,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/valuetechtev/rf/internal"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	timeout   time.Duration
-	verbose   bool
+	timeout time.Duration
+	verbose bool
+	plain   bool
+
 	terms     embed.FS
 	termsPath = filepath.Clean("terms")
 )
@@ -47,6 +50,7 @@ func Execute(t embed.FS) {
 func init() {
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "HTTP request timeout")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
+	rootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "print plain output instead of pretty")
 	rootCmd.AddCommand(listCmd())
 }
 
@@ -77,6 +81,24 @@ func lookupTerm(term string) error {
 	transformer := internal.NewMarkdownTransformer()
 
 	markdown := transformer.Transform(doc)
+
+	if !plain {
+		r, err := glamour.NewTermRenderer(
+			glamour.WithWordWrap(80),
+			glamour.WithStylePath("dark"),
+		)
+		if err != nil {
+			return err
+		}
+
+		out, err := r.Render(markdown)
+		if err != nil {
+			return err
+		}
+		fmt.Print(out)
+		return nil
+	}
+
 	fmt.Print(markdown)
 
 	return nil
