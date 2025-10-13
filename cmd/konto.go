@@ -19,6 +19,7 @@ func kontoCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Example: `  rf konto 4900
   rf konto 1920`,
+		ValidArgsFunction: completeAccounts,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			accountNum, err := strconv.Atoi(args[0])
 			if err != nil {
@@ -135,4 +136,29 @@ func renderMarkdown(markdown string) error {
 	}
 	fmt.Print(out)
 	return nil
+}
+
+func allAccounts() []string {
+	f, err := accounts.ReadFile("accounts.json")
+	if err != nil {
+		return nil
+	}
+
+	var groups []internal.AccountGroup
+	if err := json.Unmarshal(f, &groups); err != nil {
+		return nil
+	}
+
+	var accountNumbers []string
+	for _, group := range groups {
+		for _, account := range group.Kontoer {
+			accountNumbers = append(accountNumbers, fmt.Sprintf("%d\t%s", account.Kontonummer, account.Navn))
+		}
+	}
+
+	return accountNumbers
+}
+
+func completeAccounts(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return allAccounts(), cobra.ShellCompDirectiveNoFileComp
 }
