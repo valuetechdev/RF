@@ -21,6 +21,7 @@ var (
 
 	terms     embed.FS
 	termsPath = filepath.Clean("terms")
+	accounts  embed.FS
 )
 
 var rootCmd = &cobra.Command{
@@ -41,8 +42,9 @@ It fetches data from an API endpoint and displays the result as formatted Markdo
 	},
 }
 
-func Execute(t embed.FS) {
+func Execute(t embed.FS, a embed.FS) {
 	terms = t
+	accounts = a
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -53,6 +55,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
 	rootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "print plain output instead of pretty")
 	rootCmd.AddCommand(listCmd())
+	rootCmd.AddCommand(kontoCmd())
 }
 
 func lookupTerm(term string) (*internal.Document, error) {

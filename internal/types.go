@@ -44,3 +44,28 @@ type Related struct {
 type Slug struct {
 	Current string `json:"current"`
 }
+
+type AccountGroup struct {
+	Nummer  int       `json:"nummer"`
+	Navn    string    `json:"navn"`
+	Kontoer []Account `json:"kontoer"`
+}
+
+type Account struct {
+	Kontonummer   int         `json:"kontonummer"`
+	Navn          string      `json:"navn"`
+	KunForOrgForm []string    `json:"kunForOrgForm"`
+	MetaData      AccountMeta `json:"metaData"`
+}
+
+type AccountMeta struct {
+	Hjelpetekst           string   `json:"hjelpetekst"`
+	Advarsel              string   `json:"advarsel"`
+	Eksempler             string   `json:"eksempler"`
+	GyldigeMvakoder       []string `json:"gyldigeMvakoder"`
+	DefaultMvakode        *string  `json:"defaultMvakode"`
+	DefaultMvakodeErIngen bool     `json:"defaultMvakodeErIngen"`
+	Labels                []string `json:"labels"`
+	Statusfarge           string   `json:"statusfarge"`
+	Sokeord               []string `json:"sokeord"`
+}
