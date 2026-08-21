@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/valuetechtev/rf/internal"
+	"github.com/valuetechdev/rf/internal"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	timeout time.Duration
 	verbose bool
 	plain   bool
 
@@ -27,12 +25,14 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "rf [term]",
 	Short: "Lookup Norwegian financial terms and display as Markdown",
-	Long: `RF (Regnskapsfaglig) is a CLI tool for looking up Norwegian financial and accounting terms.
-It fetches data from an API endpoint and displays the result as formatted Markdown.`,
+	Long: `RF (Regnskapsfører) is a CLI tool for looking up Norwegian financial and accounting terms.
+Terms and account data are embedded in the binary, so lookups work offline.
+Results are rendered as Markdown in the terminal.`,
 	Args: cobra.ExactArgs(1),
-	Example: `  rf bokforing    # Look up "bokføring" 
-  rf regnskap     # Look up "regnskap"
-  rf balanse      # Look up "balanse"`, //nolint:misspell
+	Example: `  rf bokforing        # Look up "bokføring"
+  rf -v bokforing     # Include the full article, not just the summary
+  rf list             # List every available term
+  rf konto 1920       # Look up account 1920`, //nolint:misspell
 	ValidArgsFunction: completeList,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		term := args[0]
@@ -51,7 +51,6 @@ func Execute(t embed.FS, a embed.FS) {
 }
 
 func init() {
-	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "HTTP request timeout")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "More than just the summary")
 	rootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "print plain output instead of pretty")
 	rootCmd.AddCommand(listCmd())

@@ -8,7 +8,7 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"github.com/spf13/cobra"
-	"github.com/valuetechtev/rf/internal"
+	"github.com/valuetechdev/rf/internal"
 )
 
 func kontoCmd() *cobra.Command {

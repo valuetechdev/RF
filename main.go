@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 
-	"github.com/valuetechtev/rf/cmd"
+	"github.com/valuetechdev/rf/cmd/rf"
 )
 
 //go:embed terms

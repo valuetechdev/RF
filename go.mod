@@ -1,4 +1,4 @@
-module github.com/valuetechtev/rf
+module github.com/valuetechdev/rf
 
 go 1.25.1
 
