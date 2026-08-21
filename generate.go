@@ -1,4 +1,4 @@
-//go:generate curl https://kontohjelp.fiken.no/data/kontoGruppeInfo > accounts.json
+//go:generate curl -sSfL -o accounts.json https://kontohjelp.fiken.no/data/kontoGruppeInfo
 //go:generate go run cmd/download/main.go
 
 package main
