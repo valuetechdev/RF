@@ -1,0 +1,29 @@
+[tools]
+go = "1.27.0"
+golangci-lint = "2.13.1"
+
+[tasks.install]
+description = "Install the binary"
+run = "go install ."
+
+[tasks.generate]
+description = "Run go generate"
+run = "go generate ./..."
+depends_post = ["fmt"]
+
+[tasks.fmt]
+description = "Run go's formatter"
+run = "go fmt ./..."
+
+[tasks.tidy]
+description = "Tidy modules and format"
+run = "go mod tidy"
+depends_post = ["fmt"]
+
+[tasks.test]
+description = "Run tests"
+run = "go test ./..."
+
+[tasks.check]
+description = "Lint the code"
+run = "golangci-lint run"
